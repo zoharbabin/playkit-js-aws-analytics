@@ -849,27 +849,8 @@ plugin.<span class="fn">sendUiEvent</span>(<span class="str">'QualityChange'</sp
 </footer>
 
 <!-- ════════════════════ SCRIPTS ════════════════════ -->
-<script src="https://cdn.jsdelivr.net/npm/@playkit-js/kaltura-player-js@latest/dist/kaltura-ovp-player.js"></script>
 <script>
-  // Load plugin bundle: try same-directory, fallback to ../dist/
-  (function() {
-    var s = document.createElement('script');
-    s.src = 'playkit-aws-analytics.js';
-    s.onerror = function() {
-      var f = document.createElement('script');
-      f.src = '../dist/playkit-aws-analytics.js';
-      f.onerror = function() {
-        document.getElementById('status-pill').style.display = 'inline-flex';
-        document.getElementById('status-pill').className = 'status-pill error';
-        document.getElementById('status-text').textContent = 'Plugin bundle not found — run: npm run build';
-      };
-      document.head.appendChild(f);
-    };
-    document.head.appendChild(s);
-  })();
-</script>
-<script>
-  // ── Event capture (intercept all 3 channels) ──
+  // ── Event capture — must run BEFORE any other scripts ──
   var capturedEvents = [];
   var logEl = document.getElementById('event-log');
   var countEl = document.getElementById('event-count');
@@ -923,10 +904,25 @@ plugin.<span class="fn">sendUiEvent</span>(<span class="str">'QualityChange'</sp
     capturedEvents = [];
     countEl.textContent = '0 events';
   }
+</script>
 
-  // ── Player setup ──
+<!-- 1. Kaltura Player (synchronous) -->
+<script src="https://cdn.jsdelivr.net/npm/@playkit-js/kaltura-player-js@latest/dist/kaltura-ovp-player.js"></script>
+
+<script>
+  // 2. Load plugin bundle, then init player on load callback
   var player;
+  var pluginReady = false;
+
+  function showStatus(type, msg) {
+    var pill = document.getElementById('status-pill');
+    pill.style.display = 'inline-flex';
+    pill.className = 'status-pill ' + type;
+    document.getElementById('status-text').textContent = msg;
+  }
+
   function initPlayer() {
+    if (player) return;
     try {
       player = KalturaPlayer.setup({
         logLevel: 'OFF',
@@ -937,42 +933,69 @@ plugin.<span class="fn">sendUiEvent</span>(<span class="str">'QualityChange'</sp
       });
       player.loadMedia({ entryId: '1_io380akk' });
       window.__kalturaPlayer = player;
-      var pill = document.getElementById('status-pill');
-      pill.style.display = 'inline-flex';
-      pill.className = 'status-pill connected';
-      document.getElementById('status-text').textContent = 'Plugin active — zero config';
+      pluginReady = true;
+      showStatus('connected', 'Plugin active — zero config');
     } catch(e) {
-      var pill = document.getElementById('status-pill');
-      pill.style.display = 'inline-flex';
-      pill.className = 'status-pill error';
-      document.getElementById('status-text').textContent = 'Player init failed: ' + e.message;
+      showStatus('error', 'Player init failed: ' + e.message);
     }
   }
-  // Wait for plugin script to load
-  setTimeout(initPlayer, 500);
+
+  function loadPluginScript(src, fallback) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = function() { initPlayer(); };
+    s.onerror = function() {
+      if (fallback) {
+        loadPluginScript(fallback, null);
+      } else {
+        showStatus('error', 'Plugin bundle not found — run: npm run build');
+      }
+    };
+    document.head.appendChild(s);
+  }
+
+  loadPluginScript('playkit-aws-analytics.js', '../dist/playkit-aws-analytics.js');
 
   // ── UI event controls ──
   function getPlugin() {
-    return player && player._pluginManager && player._pluginManager.get('awsAnalytics');
+    if (!player || !player._pluginManager) return null;
+    return player._pluginManager.get('awsAnalytics') || null;
   }
+
   function doSeekBack() {
     if (!player) return;
     player.currentTime = Math.max(0, player.currentTime - 10);
-    var p = getPlugin(); if (p) p.sendUiEvent('SeekBackward');
+    var p = getPlugin();
+    if (p) p.sendUiEvent('SeekBackward');
   }
+
   function doSeekFwd() {
     if (!player) return;
     player.currentTime = player.currentTime + 10;
-    var p = getPlugin(); if (p) p.sendUiEvent('SeekForward');
+    var p = getPlugin();
+    if (p) p.sendUiEvent('SeekForward');
   }
+
   function doTranscript() {
-    var p = getPlugin(); if (p) p.sendUiEvent('TranscriptToggle');
-    markFired('btn-transcript');
+    var p = getPlugin();
+    if (p) {
+      p.sendUiEvent('TranscriptToggle');
+      markFired('btn-transcript');
+    } else {
+      showStatus('error', 'Plugin not ready — wait for player to load');
+    }
   }
+
   function doQuality() {
-    var p = getPlugin(); if (p) p.sendUiEvent('QualityChange');
-    markFired('btn-quality');
+    var p = getPlugin();
+    if (p) {
+      p.sendUiEvent('QualityChange');
+      markFired('btn-quality');
+    } else {
+      showStatus('error', 'Plugin not ready — wait for player to load');
+    }
   }
+
   function markFired(id) {
     var btn = document.getElementById(id);
     if (btn && !btn.classList.contains('fired')) btn.classList.add('fired');
