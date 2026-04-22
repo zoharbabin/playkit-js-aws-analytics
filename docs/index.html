@@ -502,23 +502,6 @@
     <div id="player-container"></div>
   </div>
 
-  <div class="controls">
-    <button class="btn" onclick="doSeekBack()" title="Sends SeekBackward UI event">
-      <span class="btn-icon">&#x23EA;</span> Seek -10s
-    </button>
-    <button class="btn" onclick="doSeekFwd()" title="Sends SeekForward UI event">
-      <span class="btn-icon">&#x23E9;</span> Seek +10s
-    </button>
-    <button class="btn" id="btn-transcript" onclick="doTranscript()" title="Sends TranscriptToggle UI event">
-      <span class="btn-icon">&#x1F4DD;</span> Transcript
-    </button>
-    <button class="btn" id="btn-quality" onclick="doQuality()" title="Sends QualityChange UI event">
-      <span class="btn-icon">&#x2699;</span> Quality
-    </button>
-    <button class="btn btn-danger" onclick="clearLog()" title="Clear the event log">
-      <span class="btn-icon">&#x1F5D1;</span> Clear
-    </button>
-  </div>
 
   <div class="event-log-wrapper">
     <div class="log-header">
@@ -526,10 +509,13 @@
         Event Log
         <span class="event-counter" id="event-count">0 events</span>
       </div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span> Analytics</span>
-        <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> State</span>
-        <span class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span> Logger</span>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span> Analytics</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> State</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span> Logger</span>
+        </div>
+        <button class="btn btn-danger" onclick="clearLog()" style="padding: 4px 12px; font-size: 11px; margin: 0;">Clear</button>
       </div>
     </div>
     <div class="event-log" id="event-log">
