@@ -19,14 +19,30 @@ export interface AwsAnalyticsEventDetail {
 }
 
 export interface AwsLoggerEventDetail {
-  logLevel: 'info';
+  logLevel: 'info' | 'error';
   namespace: 'VideoPlayer';
   orgId: string;
-  metricName: 'VideoBufferTime';
-  payload: {
-    duration: number;
-    unit: 'Seconds';
-  };
+  metricName: 'VideoBufferTime' | 'VideoPlayerReady' | 'VideoError';
+  payload: AwsBufferPayload | AwsPlayerReadyPayload | AwsErrorPayload;
+}
+
+export interface AwsBufferPayload {
+  duration: number;
+  unit: 'Seconds';
+}
+
+export interface AwsPlayerReadyPayload {
+  value: number;
+  unit: 'Milliseconds';
+}
+
+export interface AwsErrorPayload {
+  videoId: string;
+  videoTitle: string;
+  message: string;
+  code?: number;
+  value: 1;
+  unit: 'Count';
 }
 
 export interface AwsPlayerStateDetail {

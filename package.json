@@ -1,6 +1,6 @@
 {
   "name": "@playkit-js/playkit-js-aws-analytics",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Kaltura Player plugin that replicates AWS TV video analytics via CustomEvent bridge to the Libra framework",
   "main": "dist/playkit-aws-analytics.js",
   "typings": "dist/index.d.ts",

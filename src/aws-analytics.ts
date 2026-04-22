@@ -23,13 +23,16 @@ export class AwsAnalytics extends BasePlugin {
   private _firedEvents: Set<string> = new Set();
   private _isEnded = false;
   private _isSeeking = false;
+  private _seekStartPosition = 0;
   private _bufferStartTime = 0;
+  private _playerReadyTime = 0;
   private _watchTimeSentThisCycle = false;
   private _bridge: LibraBridge = new LibraBridge();
   private _pendingPauseTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(name: string, player: KalturaPlayer, config: AwsAnalyticsConfig) {
     super(name, player, config);
+    this._playerReadyTime = Date.now();
     this._bindPlayerEvents();
     this._bindUnload();
   }
@@ -38,6 +41,7 @@ export class AwsAnalytics extends BasePlugin {
     this._firedEvents.clear();
     this._isEnded = false;
     this._isSeeking = false;
+    this._seekStartPosition = 0;
     this._bufferStartTime = 0;
     this._watchTimeSentThisCycle = false;
     this._clearPendingPause();
@@ -84,6 +88,19 @@ export class AwsAnalytics extends BasePlugin {
     this.eventManager.listen(this.player, Event.PLAYER_STATE_CHANGED, (e: { payload: { oldState: { type: string }; newState: { type: string } } }) =>
       this._onStateChanged(e)
     );
+    this.eventManager.listen(this.player, Event.ERROR, (e: { payload: { severity: number; code: number; data: string } }) =>
+      this._onError(e)
+    );
+
+    if (Event.VIDEO_TRACK_CHANGED) {
+      this.eventManager.listen(this.player, Event.VIDEO_TRACK_CHANGED, () => this._sendEvent('QualityChange'));
+    }
+    if (Event.TEXT_TRACK_CHANGED) {
+      this.eventManager.listen(this.player, Event.TEXT_TRACK_CHANGED, () => this._sendEvent('TranscriptToggle'));
+    }
+    if (Event.CAN_PLAY) {
+      this.eventManager.listen(this.player, Event.CAN_PLAY, () => this._onPlayerReady());
+    }
   }
 
   // --- Player event handlers ---
@@ -128,10 +145,18 @@ export class AwsAnalytics extends BasePlugin {
   }
 
   private _onSeeking(): void {
+    this._seekStartPosition = this.player.currentTime ?? 0;
     this._isSeeking = true;
   }
 
   private _onSeeked(): void {
+    const seekEnd = this.player.currentTime ?? 0;
+    const delta = seekEnd - this._seekStartPosition;
+    if (delta > 1) {
+      this._sendEvent('SeekForward');
+    } else if (delta < -1) {
+      this._sendEvent('SeekBackward');
+    }
     this._isSeeking = false;
   }
 
@@ -167,6 +192,38 @@ export class AwsAnalytics extends BasePlugin {
         payload: { duration, unit: 'Seconds' }
       });
     }
+  }
+
+  private _onPlayerReady(): void {
+    if (this._playerReadyTime > 0) {
+      const value = Date.now() - this._playerReadyTime;
+      this._playerReadyTime = 0;
+      this._bridge.sendLoggerEvent({
+        logLevel: 'info',
+        namespace: 'VideoPlayer',
+        orgId: this.config.orgId,
+        metricName: 'VideoPlayerReady',
+        payload: { value, unit: 'Milliseconds' }
+      });
+    }
+  }
+
+  private _onError(event: { payload: { severity: number; code: number; data: string } }): void {
+    const { code, data } = event.payload;
+    this._bridge.sendLoggerEvent({
+      logLevel: 'error',
+      namespace: 'VideoPlayer',
+      orgId: this.config.orgId,
+      metricName: 'VideoError',
+      payload: {
+        videoId: this._videoId,
+        videoTitle: this._videoTitle,
+        message: data || 'Unknown error',
+        code,
+        value: 1,
+        unit: 'Count'
+      }
+    });
   }
 
   // --- Fire-once dedup ---

@@ -5,7 +5,7 @@
 
 Kaltura Player JS plugin that bridges player analytics to the AWS TV Libra framework via `CustomEvent` dispatch.
 
-Drop-in replacement for the analytics layer in the AWS TV video player — all 12 analytics events, 3 CustomEvent channels, buffer-time metrics, and page-lifecycle watch-time tracking are replicated exactly.
+Drop-in replacement for the analytics layer in the AWS TV video player — all 12 analytics events are auto-detected from native player events, dispatched on 3 CustomEvent channels, with buffer metrics (VideoBufferTime, VideoPlayerReady, VideoError) and page-lifecycle watch-time tracking. Verified against the real `aws.amazon.com/video/watch/*` pages.
 
 ## Quick Start
 
@@ -58,22 +58,22 @@ plugins: {
 
 ## Analytics Events
 
-All analytics events fire **once per media session** (reset on `loadMedia`) and are dispatched as `CustomEvent` on the `custom_aws_eb-analytics_notify-listener` channel.
+All 12 events match the real AWS TV player (`aws.amazon.com/video/watch/*`) exactly. Events are auto-detected from native player events — no manual API calls needed. Fire-once events reset on `loadMedia`.
 
-| Event | Trigger | Extra Fields |
-|-------|---------|--------------|
-| `Play` | First playback starts | — |
-| `Pause` | User pauses (not during seek or at video end) | — |
-| `Replay` | Playback resumes after ended state | — |
-| `Watch` | Accumulated watch time exceeds `watchThresholdSeconds` | — |
-| `Complete` | Watch ratio exceeds `completeThresholdPercent` | `duration` (rounded seconds) |
-| `WatchTime` | Page hidden / unloaded (can fire multiple times) | `timestamp`, `watchTime`, `duration` |
-| `VolumeChange` | Volume changed | — |
-| `FullScreenChange` | Enter or exit fullscreen | — |
-| `SeekForward` | UI-triggered seek forward | — |
-| `SeekBackward` | UI-triggered seek backward | — |
-| `TranscriptToggle` | Transcript toggled | — |
-| `QualityChange` | Quality changed | — |
+| Event | Player Event | Extra Fields |
+|-------|-------------|--------------|
+| `Play` | `FIRST_PLAYING` | — |
+| `Pause` | `PAUSE` (deferred, filtered during seek/ended) | — |
+| `Replay` | `PLAYING` when `_isEnded` is true | — |
+| `Watch` | `TIME_UPDATE` — accumulated watch time exceeds threshold | — |
+| `Complete` | `TIME_UPDATE` — watch ratio exceeds threshold | `duration` (rounded seconds) |
+| `WatchTime` | `visibilitychange` / `pagehide` / `beforeunload` | `timestamp`, `watchTime`, `duration` |
+| `VolumeChange` | `VOLUME_CHANGE` | — |
+| `FullScreenChange` | `ENTER_FULLSCREEN` / `EXIT_FULLSCREEN` | — |
+| `SeekForward` | `SEEKED` — seek delta > 1s forward | — |
+| `SeekBackward` | `SEEKED` — seek delta > 1s backward | — |
+| `QualityChange` | `VIDEO_TRACK_CHANGED` | — |
+| `TranscriptToggle` | `TEXT_TRACK_CHANGED` | — |
 
 Every analytics event payload includes:
 ```json
@@ -95,23 +95,32 @@ Player state changes are dispatched on `document.body` via the `custom_awstv_vid
 | `pause` | User pauses, or just before `ended` at natural video end |
 | `ended` | Video reaches the end |
 
-## Buffer Metrics
+## Logger Metrics
 
-Buffer duration is dispatched on the `custom_aws_eb-logger_notify-listener` channel whenever the player exits a buffering state:
+Three operational metrics are dispatched on the `custom_aws_eb-logger_notify-listener` channel (matching the real AWS TV player):
 
+**VideoBufferTime** — fires each time the player exits a buffering state:
 ```json
-{
-  "logLevel": "info",
-  "namespace": "VideoPlayer",
-  "orgId": "awsm_tv",
-  "metricName": "VideoBufferTime",
-  "payload": { "duration": 1.234, "unit": "Seconds" }
-}
+{ "logLevel": "info", "namespace": "VideoPlayer", "orgId": "awsm_tv",
+  "metricName": "VideoBufferTime", "payload": { "duration": 1.234, "unit": "Seconds" } }
+```
+
+**VideoPlayerReady** — fires once when the player can play (CAN_PLAY):
+```json
+{ "logLevel": "info", "namespace": "VideoPlayer", "orgId": "awsm_tv",
+  "metricName": "VideoPlayerReady", "payload": { "value": 842, "unit": "Milliseconds" } }
+```
+
+**VideoError** — fires on player errors:
+```json
+{ "logLevel": "error", "namespace": "VideoPlayer", "orgId": "awsm_tv",
+  "metricName": "VideoError", "payload": { "videoId": "...", "videoTitle": "...",
+  "message": "...", "code": 2000, "value": 1, "unit": "Count" } }
 ```
 
 ## UI Events API
 
-For events triggered by custom UI controls (not native player events), call `sendUiEvent` on the plugin instance:
+All events above are auto-detected from native player events. If you also have custom UI controls that bypass the player's native events, you can use `sendUiEvent` as an additional trigger:
 
 ```javascript
 const plugin = player._pluginManager.get('awsAnalytics');
