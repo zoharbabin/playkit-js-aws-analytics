@@ -437,6 +437,8 @@
 <table>
   <tr><th>Metric</th><th>When It Fires</th><th>Fires Once?</th></tr>
   <tr><td><strong>VideoBufferTime</strong></td><td>Every time the player exits a buffering state (captures duration in seconds)</td><td>No (fires each time)</td></tr>
+  <tr><td><strong>VideoPlayerReady</strong></td><td>When the player reaches <code>CAN_PLAY</code> state (captures time-to-ready in milliseconds)</td><td>Yes (fires once)</td></tr>
+  <tr><td><strong>VideoError</strong></td><td>On any player error (captures code, message, videoId, videoTitle)</td><td>No (fires each time)</td></tr>
 </table>
 
 <h3>Player State Broadcasts (Automatic)</h3>
@@ -626,14 +628,27 @@ Captures total seconds watched and sends them when the user leaves the page or t
 <p>Listens to: <code>VOLUME_CHANGE</code>, <code>ENTER_FULLSCREEN</code>, <code>EXIT_FULLSCREEN</code><br>
 Straightforward fire-once events with no additional logic.</p>
 
-<h3>7.7 SeekForward, SeekBackward, TranscriptToggle, QualityChange</h3>
-<p>These are <strong>not triggered by player events</strong>. They must be called explicitly by the host application's UI code via the <code>sendUiEvent()</code> API. This is because seeking direction, transcript state, and quality selection are UI-level decisions the player doesn't expose natively.</p>
+<h3>7.7 SeekForward &amp; SeekBackward</h3>
+<p>Listens to: <code>SEEKING</code>, <code>SEEKED</code><br>
+On <code>SEEKING</code>, the current position is recorded. On <code>SEEKED</code>, the delta is calculated. If the delta exceeds 1 second forward or backward, the corresponding event fires. The <code>sendUiEvent()</code> API is also available as a secondary trigger for custom UI controls.</p>
 
-<h3>7.8 VideoBufferTime (Logger Metric)</h3>
+<h3>7.8 QualityChange &amp; TranscriptToggle</h3>
+<p>Listens to: <code>VIDEO_TRACK_CHANGED</code>, <code>TEXT_TRACK_CHANGED</code><br>
+Auto-detected from native player events when the video quality or caption/subtitle track changes. Also available via <code>sendUiEvent()</code> for custom UIs.</p>
+
+<h3>7.9 VideoBufferTime (Logger Metric)</h3>
 <p>Listens to: <code>PLAYER_STATE_CHANGED</code><br>
 When the player enters <code>BUFFERING</code> state, a timestamp is recorded. When it exits, the duration is calculated and sent on the logger channel. This fires every time buffering occurs (not fire-once).</p>
 
-<h3>7.9 State Broadcasts</h3>
+<h3>7.10 VideoPlayerReady (Logger Metric)</h3>
+<p>Listens to: <code>CAN_PLAY</code><br>
+Measures the time from plugin initialization to when the player can begin playback. Sent once as milliseconds on the logger channel.</p>
+
+<h3>7.11 VideoError (Logger Metric)</h3>
+<p>Listens to: <code>ERROR</code><br>
+Captures player errors with code, message, videoId, and videoTitle. Sent on the logger channel with <code>logLevel: "error"</code>. Fires on every error (not fire-once).</p>
+
+<h3>7.12 State Broadcasts</h3>
 <p>State events (<code>play</code>, <code>pause</code>, <code>ended</code>) fire on <strong>every occurrence</strong>, not fire-once. At natural video end, the plugin explicitly sends <code>pause</code> then <code>ended</code> in sequence to match the real AWS TV player's ordering.</p>
 
 <!-- ── 8 ── -->
@@ -650,8 +665,8 @@ When the player enters <code>BUFFERING</code> state, a timestamp is recorded. Wh
   <tr>
     <td><code>custom_aws_eb-logger_notify-listener</code></td>
     <td><code>document</code></td>
-    <td>Operational metrics (buffering performance)</td>
-    <td>VideoBufferTime</td>
+    <td>Operational metrics (performance, errors)</td>
+    <td>VideoBufferTime, VideoPlayerReady, VideoError</td>
   </tr>
   <tr>
     <td><code>custom_awstv_video-player-state</code></td>
