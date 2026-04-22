@@ -88,9 +88,7 @@ export class AwsAnalytics extends BasePlugin {
     this.eventManager.listen(this.player, Event.PLAYER_STATE_CHANGED, (e: { payload: { oldState: { type: string }; newState: { type: string } } }) =>
       this._onStateChanged(e)
     );
-    this.eventManager.listen(this.player, Event.ERROR, (e: { payload: { severity: number; code: number; data: string } }) =>
-      this._onError(e)
-    );
+    this.eventManager.listen(this.player, Event.ERROR, (e: { payload: { severity: number; code: number; data: string } }) => this._onError(e));
 
     if (Event.VIDEO_TRACK_CHANGED) {
       this.eventManager.listen(this.player, Event.VIDEO_TRACK_CHANGED, () => this._sendEvent('QualityChange'));
