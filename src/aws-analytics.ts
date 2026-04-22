@@ -23,7 +23,7 @@ export class AwsAnalytics extends BasePlugin {
   private _firedEvents: Set<string> = new Set();
   private _isEnded = false;
   private _isSeeking = false;
-  private _seekStartPosition = 0;
+  private _lastKnownPosition = 0;
   private _bufferStartTime = 0;
   private _playerReadyTime = 0;
   private _watchTimeSentThisCycle = false;
@@ -41,7 +41,7 @@ export class AwsAnalytics extends BasePlugin {
     this._firedEvents.clear();
     this._isEnded = false;
     this._isSeeking = false;
-    this._seekStartPosition = 0;
+    this._lastKnownPosition = 0;
     this._bufferStartTime = 0;
     this._watchTimeSentThisCycle = false;
     this._clearPendingPause();
@@ -145,13 +145,12 @@ export class AwsAnalytics extends BasePlugin {
   }
 
   private _onSeeking(): void {
-    this._seekStartPosition = this.player.currentTime ?? 0;
     this._isSeeking = true;
   }
 
   private _onSeeked(): void {
     const seekEnd = this.player.currentTime ?? 0;
-    const delta = seekEnd - this._seekStartPosition;
+    const delta = seekEnd - this._lastKnownPosition;
     if (delta > 1) {
       this._sendEvent('SeekForward');
     } else if (delta < -1) {
@@ -161,6 +160,9 @@ export class AwsAnalytics extends BasePlugin {
   }
 
   private _onTimeUpdate(): void {
+    if (!this._isSeeking) {
+      this._lastKnownPosition = this.player.currentTime ?? 0;
+    }
     const watched = this._getWatchedDuration();
     const duration = this.player.duration ?? 0;
 
