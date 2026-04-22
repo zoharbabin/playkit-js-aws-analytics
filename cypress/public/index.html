@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <script>
+      // Event capture — must be before any other scripts
+      window.__capturedEvents = [];
+      (function() {
+        var ANALYTICS = 'custom_aws_eb-analytics_notify-listener';
+        var LOGGER = 'custom_aws_eb-logger_notify-listener';
+        var STATE = 'custom_awstv_video-player-state';
+        var origDispatch = EventTarget.prototype.dispatchEvent;
+        EventTarget.prototype.dispatchEvent = function(event) {
+          if (event && event.detail !== undefined && event.type) {
+            var channel = '';
+            if (event.type === ANALYTICS) channel = 'analytics';
+            else if (event.type === LOGGER) channel = 'logger';
+            else if (event.type === STATE) channel = 'state';
+            if (channel) {
+              try {
+                window.__capturedEvents.push({
+                  ts: Date.now(),
+                  channel: channel,
+                  detail: JSON.parse(JSON.stringify(event.detail))
+                });
+              } catch(e) {}
+            }
+          }
+          return origDispatch.call(this, event);
+        };
+      })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@playkit-js/kaltura-player-js@latest/dist/kaltura-ovp-player.js"></script>
+    <script src="./playkit-aws-analytics.js"></script>
+    <title>AWS Analytics Plugin — Cypress Tests</title>
+  </head>
+  <body>
+    <div id="player-placeholder" style="width: 640px; height: 360px;"></div>
+  </body>
+</html>

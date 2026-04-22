@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>playkit-js-aws-analytics — Complete Plugin Guide</title>
+<style>
+  @page {
+    size: letter;
+    margin: 0.9in 0.75in 0.9in 0.75in;
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 9px;
+      color: #888;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.55;
+    color: #1a1a1a;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ── Cover page ── */
+  .cover {
+    page-break-after: always;
+    text-align: center;
+    padding-top: 2.5in;
+  }
+  .cover h1 {
+    font-size: 28pt;
+    font-weight: 700;
+    color: #0f1b2d;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .cover .subtitle {
+    font-size: 14pt;
+    color: #555;
+    margin-bottom: 40px;
+  }
+  .cover .meta {
+    font-size: 10pt;
+    color: #888;
+    margin-top: 60px;
+    line-height: 1.8;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: #e8f4fd;
+    color: #0969da;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 10pt;
+    font-weight: 600;
+    margin-top: 20px;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    page-break-after: always;
+  }
+  .toc h2 {
+    font-size: 18pt;
+    border-bottom: 2px solid #0f1b2d;
+    padding-bottom: 6px;
+    margin-bottom: 20px;
+  }
+  .toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .toc li {
+    padding: 5px 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 11pt;
+  }
+  .toc li.section {
+    font-weight: 700;
+    font-size: 11.5pt;
+    margin-top: 12px;
+    border-bottom: none;
+    color: #0f1b2d;
+  }
+  .toc .page-ref {
+    float: right;
+    color: #888;
+    font-weight: 400;
+  }
+
+  /* ── Headings ── */
+  h2 {
+    font-size: 17pt;
+    color: #0f1b2d;
+    border-bottom: 2px solid #dde3ea;
+    padding-bottom: 5px;
+    margin-top: 30px;
+    margin-bottom: 14px;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 13pt;
+    color: #24292f;
+    margin-top: 22px;
+    margin-bottom: 8px;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-size: 11pt;
+    color: #444;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  /* ── Body ── */
+  p { margin: 0 0 10px 0; }
+  ul, ol { margin: 0 0 12px 0; padding-left: 22px; }
+  li { margin-bottom: 4px; }
+  strong { color: #0f1b2d; }
+  em { font-style: italic; color: #555; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 16px 0;
+    font-size: 10pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #f0f3f6;
+    color: #24292f;
+    font-weight: 700;
+    text-align: left;
+    padding: 7px 10px;
+    border: 1px solid #d0d7de;
+    font-size: 9.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  td {
+    padding: 6px 10px;
+    border: 1px solid #d0d7de;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f8f9fa; }
+
+  /* ── Code ── */
+  code {
+    font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+    font-size: 9pt;
+    background: #f0f3f6;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #0550ae;
+  }
+  pre {
+    background: #f6f8fa;
+    border: 1px solid #d8dee4;
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 8.5pt;
+    line-height: 1.5;
+    margin: 10px 0 16px 0;
+    page-break-inside: avoid;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: #24292f;
+  }
+
+  /* ── Callouts ── */
+  .callout {
+    border-left: 4px solid;
+    padding: 10px 14px;
+    margin: 14px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10pt;
+    page-break-inside: avoid;
+  }
+  .callout-info {
+    border-color: #0969da;
+    background: #f0f7ff;
+  }
+  .callout-warn {
+    border-color: #d4a017;
+    background: #fff8e1;
+  }
+  .callout-success {
+    border-color: #1a7f37;
+    background: #f0fdf4;
+  }
+  .callout-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  /* ── Diagrams ── */
+  .diagram {
+    background: #fafbfc;
+    border: 1px solid #d8dee4;
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin: 14px 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 9pt;
+    line-height: 1.5;
+    page-break-inside: avoid;
+  }
+  .diagram table { width: 100%; border-collapse: collapse; }
+  .diagram .box {
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #eff6ff;
+    text-align: center;
+    font-weight: 600;
+    color: #1e3a5f;
+  }
+  .diagram .box-label {
+    font-size: 7.5pt;
+    color: #666;
+    font-weight: 400;
+    margin-top: 4px;
+  }
+  .diagram .arrow-cell {
+    text-align: center;
+    font-size: 16pt;
+    color: #3b82f6;
+    font-weight: 700;
+    padding: 0 4px;
+    white-space: nowrap;
+  }
+  .diagram .channel-row {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    font-size: 8.5pt;
+  }
+  .diagram .channel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .diagram .channel-name { font-weight: 600; margin-right: 6px; }
+  .diagram .channel-target { color: #666; }
+  .diagram .class-box {
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0 auto;
+  }
+  .diagram .class-header {
+    background: #3b82f6;
+    color: #fff;
+    font-weight: 700;
+    padding: 6px 14px;
+    font-size: 10pt;
+    text-align: center;
+  }
+  .diagram .class-header-sub {
+    background: #dbeafe;
+    color: #1e3a5f;
+    font-weight: 600;
+    padding: 5px 14px;
+    font-size: 9pt;
+    text-align: center;
+    border-top: 1px solid #93c5fd;
+  }
+  .diagram .class-body {
+    padding: 8px 14px;
+    background: #fff;
+    font-size: 8.5pt;
+    line-height: 1.7;
+    border-top: 1px solid #93c5fd;
+  }
+  .diagram .class-body code {
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 8pt;
+    background: #f0f4f8;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  .diagram .inherit-arrow {
+    text-align: center;
+    padding: 6px 0;
+    font-size: 10pt;
+    color: #3b82f6;
+    font-weight: 700;
+  }
+
+  /* ── Section divider ── */
+  .part-divider {
+    page-break-before: always;
+    text-align: center;
+    padding-top: 2in;
+  }
+  .part-divider h2 {
+    font-size: 22pt;
+    border: none;
+    color: #0f1b2d;
+    margin-bottom: 8px;
+  }
+  .part-divider p {
+    font-size: 12pt;
+    color: #666;
+  }
+
+  /* ── Footer ── */
+  .footer-note {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #ddd;
+    font-size: 9pt;
+    color: #888;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     COVER PAGE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <h1>playkit-js-aws-analytics</h1>
+  <div class="subtitle">Complete Plugin Guide</div>
+  <div class="badge">Kaltura Player JS Plugin &middot; v1.0.0</div>
+  <div class="meta">
+    Bridging Kaltura Player analytics to the AWS TV Libra framework<br>
+    12 analytics events &middot; 3 CustomEvent channels &middot; Full E2E test coverage<br><br>
+    April 2026
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     TABLE OF CONTENTS
+     ════════════════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ul>
+    <li class="section">Part I &mdash; Overview (For Everyone)</li>
+    <li>&nbsp;&nbsp;&nbsp;1. What This Plugin Does</li>
+    <li>&nbsp;&nbsp;&nbsp;2. Why It Exists</li>
+    <li>&nbsp;&nbsp;&nbsp;3. What It Tracks</li>
+    <li>&nbsp;&nbsp;&nbsp;4. How Data Flows</li>
+    <li>&nbsp;&nbsp;&nbsp;5. Configuration Options</li>
+
+    <li class="section">Part II &mdash; Technical Reference</li>
+    <li>&nbsp;&nbsp;&nbsp;6. Architecture &amp; Source Files</li>
+    <li>&nbsp;&nbsp;&nbsp;7. Event Implementation Details</li>
+    <li>&nbsp;&nbsp;&nbsp;8. CustomEvent Channel Reference</li>
+    <li>&nbsp;&nbsp;&nbsp;9. Payload Schemas</li>
+    <li>&nbsp;&nbsp;&nbsp;10. Edge Case Handling</li>
+    <li>&nbsp;&nbsp;&nbsp;11. Plugin Lifecycle</li>
+
+    <li class="section">Part III &mdash; Integration &amp; Deployment</li>
+    <li>&nbsp;&nbsp;&nbsp;12. Installation &amp; Setup</li>
+    <li>&nbsp;&nbsp;&nbsp;13. UI Event API</li>
+    <li>&nbsp;&nbsp;&nbsp;14. Listening to Events (Consumer Side)</li>
+    <li>&nbsp;&nbsp;&nbsp;15. Development Workflow</li>
+    <li>&nbsp;&nbsp;&nbsp;16. Test Coverage</li>
+    <li>&nbsp;&nbsp;&nbsp;17. Production Deployment Checklist</li>
+    <li>&nbsp;&nbsp;&nbsp;18. Important Considerations</li>
+  </ul>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART I — OVERVIEW
+     ════════════════════════════════════════════════════════════════ -->
+<div class="part-divider">
+  <h2>Part I</h2>
+  <p>Overview &mdash; For Everyone</p>
+</div>
+
+<!-- ── 1 ── -->
+<h2>1. What This Plugin Does</h2>
+
+<p>The <strong>playkit-js-aws-analytics</strong> plugin is a bridge between the <strong>Kaltura Video Player</strong> and the <strong>AWS TV Libra analytics framework</strong>.</p>
+
+<p>When a viewer watches a video on a page powered by the Kaltura Player, this plugin automatically detects what the viewer does &mdash; pressing play, pausing, seeking, changing volume, going fullscreen, watching past a threshold, completing the video, and more &mdash; and translates each of those actions into the exact analytics events that the AWS TV analytics infrastructure expects.</p>
+
+<p>The plugin is a <strong>drop-in replacement</strong> for the analytics layer in the existing AWS TV video player. The AWS TV team can switch from their current player to the Kaltura Player without losing any analytics data, dashboards, or downstream integrations.</p>
+
+<div class="callout callout-success">
+  <div class="callout-title">Key Benefit</div>
+  Zero analytics disruption when migrating to Kaltura Player. Every event, every payload field, every CustomEvent channel is replicated exactly.
+</div>
+
+<!-- ── 2 ── -->
+<h2>2. Why It Exists</h2>
+
+<p>The AWS TV video player currently uses a custom-built analytics layer that sends events to the <strong>Libra framework</strong> via browser <code>CustomEvent</code> dispatch. Downstream systems &mdash; dashboards, engagement metrics, content recommendations, and operational monitoring &mdash; all depend on receiving these specific events in a specific format.</p>
+
+<p>When migrating to the Kaltura Player, these analytics must continue working identically. Rather than requiring the AWS TV team to rewire their entire analytics pipeline, this plugin ensures the Kaltura Player speaks the same language.</p>
+
+<!-- ── 3 ── -->
+<h2>3. What It Tracks</h2>
+
+<p>The plugin tracks <strong>12 distinct analytics events</strong> across three categories:</p>
+
+<h3>Playback Events (Automatic)</h3>
+<table>
+  <tr><th>Event</th><th>When It Fires</th><th>Fires Once?</th></tr>
+  <tr><td><strong>Play</strong></td><td>The very first time the viewer presses play</td><td>Yes</td></tr>
+  <tr><td><strong>Pause</strong></td><td>The viewer pauses the video (not during seeking or at video end)</td><td>Yes</td></tr>
+  <tr><td><strong>Replay</strong></td><td>The viewer plays the video again after it has ended</td><td>Yes</td></tr>
+  <tr><td><strong>Watch</strong></td><td>The viewer has watched at least 30 seconds of actual content</td><td>Yes</td></tr>
+  <tr><td><strong>Complete</strong></td><td>The viewer has watched 95% or more of the video</td><td>Yes</td></tr>
+  <tr><td><strong>WatchTime</strong></td><td>The viewer leaves the page or switches tabs (captures total seconds watched)</td><td>Per cycle*</td></tr>
+  <tr><td><strong>VolumeChange</strong></td><td>The viewer changes the volume</td><td>Yes</td></tr>
+  <tr><td><strong>FullScreenChange</strong></td><td>The viewer enters or exits fullscreen</td><td>Yes</td></tr>
+</table>
+
+<p><em>* WatchTime fires once each time the page becomes hidden, resets when the page becomes visible again, and fires again next time it's hidden.</em></p>
+
+<h3>UI-Triggered Events (Manual)</h3>
+<table>
+  <tr><th>Event</th><th>When It Fires</th><th>Fires Once?</th></tr>
+  <tr><td><strong>SeekForward</strong></td><td>Custom UI button triggers a forward seek</td><td>Yes</td></tr>
+  <tr><td><strong>SeekBackward</strong></td><td>Custom UI button triggers a backward seek</td><td>Yes</td></tr>
+  <tr><td><strong>TranscriptToggle</strong></td><td>User toggles the transcript panel</td><td>Yes</td></tr>
+  <tr><td><strong>QualityChange</strong></td><td>User changes video quality</td><td>Yes</td></tr>
+</table>
+
+<h3>Operational Metrics (Automatic)</h3>
+<table>
+  <tr><th>Metric</th><th>When It Fires</th><th>Fires Once?</th></tr>
+  <tr><td><strong>VideoBufferTime</strong></td><td>Every time the player exits a buffering state (captures duration in seconds)</td><td>No (fires each time)</td></tr>
+</table>
+
+<h3>Player State Broadcasts (Automatic)</h3>
+<table>
+  <tr><th>State</th><th>When It Fires</th><th>Fires Once?</th></tr>
+  <tr><td><strong>play</strong></td><td>Every time playback starts or resumes</td><td>No (fires each time)</td></tr>
+  <tr><td><strong>pause</strong></td><td>Every time playback pauses, and just before <code>ended</code></td><td>No (fires each time)</td></tr>
+  <tr><td><strong>ended</strong></td><td>Video reaches the end</td><td>No (fires each time)</td></tr>
+</table>
+
+<!-- ── 4 ── -->
+<h2>4. How Data Flows</h2>
+
+<div class="diagram">
+  <table style="margin-bottom: 14px;">
+    <tr>
+      <td style="width: 22%;"><div class="box">Viewer Action<div class="box-label">click play, pause, seek, etc.</div></div></td>
+      <td class="arrow-cell" style="width: 5%;">&#x2192;</td>
+      <td style="width: 22%;"><div class="box">Kaltura Player<div class="box-label">fires native player events</div></div></td>
+      <td class="arrow-cell" style="width: 5%;">&#x2192;</td>
+      <td style="width: 22%;"><div class="box" style="border-color: #16a34a; background: #f0fdf4; color: #14532d;">AWS Analytics Plugin<div class="box-label">translates to CustomEvents</div></div></td>
+      <td class="arrow-cell" style="width: 5%;">&#x2192;</td>
+      <td style="width: 22%;"><div class="box" style="border-color: #9333ea; background: #faf5ff; color: #581c87;">Libra Framework<div class="box-label">listens on document / body</div></div></td>
+    </tr>
+  </table>
+  <div style="background: #fff; border: 1px solid #d8dee4; border-radius: 6px; padding: 10px 16px; max-width: 340px; margin: 0 auto;">
+    <div style="font-weight: 700; font-size: 8.5pt; color: #333; margin-bottom: 6px;">3 Output Channels</div>
+    <div class="channel-row"><span class="channel-dot" style="background: #3b82f6;"></span><span class="channel-name">Analytics</span><span class="channel-target">&#x2192; document</span></div>
+    <div class="channel-row"><span class="channel-dot" style="background: #f59e0b;"></span><span class="channel-name">Logger</span><span class="channel-target">&#x2192; document</span></div>
+    <div class="channel-row"><span class="channel-dot" style="background: #22c55e;"></span><span class="channel-name">State</span><span class="channel-target">&#x2192; document.body</span></div>
+  </div>
+</div>
+
+<p>The plugin sits between the Kaltura Player's internal event system and the browser's <code>CustomEvent</code> API. It listens for native player events (play, pause, timeupdate, etc.), applies business logic (deduplication, thresholds, seek filtering), and dispatches <code>CustomEvent</code> objects that the Libra framework's existing listeners pick up unchanged.</p>
+
+<!-- ── 5 ── -->
+<h2>5. Configuration Options</h2>
+
+<table>
+  <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+  <tr>
+    <td><code>videoId</code></td>
+    <td>string</td>
+    <td><em>auto</em></td>
+    <td><strong>Auto-resolved</strong> from <code>player.sources.id</code> (the Kaltura entry ID). Set explicitly only if you need a custom override.</td>
+  </tr>
+  <tr>
+    <td><code>videoTitle</code></td>
+    <td>string</td>
+    <td><em>auto</em></td>
+    <td><strong>Auto-resolved</strong> from <code>player.sources.metadata.name</code> (the entry's title in KMC). Set explicitly only if you need a custom override.</td>
+  </tr>
+  <tr>
+    <td><code>orgId</code></td>
+    <td>string</td>
+    <td><code>'awsm_tv'</code></td>
+    <td>Organization identifier sent in buffer-time logger events. Change this if your Libra configuration uses a different org ID.</td>
+  </tr>
+  <tr>
+    <td><code>watchThresholdSeconds</code></td>
+    <td>number</td>
+    <td><code>30</code></td>
+    <td>How many seconds of actual watch time before the <code>Watch</code> event fires. Based on the HTML5 <code>played</code> TimeRanges, so seeking doesn't inflate the count.</td>
+  </tr>
+  <tr>
+    <td><code>completeThresholdPercent</code></td>
+    <td>number</td>
+    <td><code>0.95</code></td>
+    <td>Fraction (0&ndash;1) of total video duration that must be watched before <code>Complete</code> fires. 0.95 means 95%.</td>
+  </tr>
+</table>
+
+<div class="callout callout-success">
+  <div class="callout-title">Zero-Config for Most Use Cases</div>
+  <code>videoId</code> and <code>videoTitle</code> are automatically pulled from the Kaltura Player's media info after <code>loadMedia()</code>. In the typical case, the only config you need is an empty <code>awsAnalytics: {}</code> object to activate the plugin. Explicit overrides are available when you need a custom video ID or title that differs from the Kaltura entry metadata.
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Why No Endpoint URLs or API Keys?</div>
+  This plugin is a <strong>CustomEvent bridge</strong>, not an HTTP transport. It dispatches browser events that the Libra framework (already loaded on the AWS TV page) listens for. Libra handles all network transport, authentication, batching, and retries. The plugin has zero network dependencies of its own.
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART II — TECHNICAL REFERENCE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="part-divider">
+  <h2>Part II</h2>
+  <p>Technical Reference</p>
+</div>
+
+<!-- ── 6 ── -->
+<h2>6. Architecture &amp; Source Files</h2>
+
+<p>The plugin consists of 4 source files totaling ~280 lines of TypeScript:</p>
+
+<table>
+  <tr><th>File</th><th>Purpose</th><th>Lines</th></tr>
+  <tr>
+    <td><code>src/index.ts</code></td>
+    <td>Entry point. Registers the plugin with the Kaltura Player via <code>registerPlugin()</code>.</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td><code>src/aws-analytics.ts</code></td>
+    <td>Main plugin class. Extends <code>BasePlugin</code>. Contains all event handlers, thresholds, dedup logic, and page lifecycle management.</td>
+    <td>245</td>
+  </tr>
+  <tr>
+    <td><code>src/libra-bridge.ts</code></td>
+    <td>Thin wrapper that dispatches <code>CustomEvent</code> objects on the correct DOM targets and channel names.</td>
+    <td>19</td>
+  </tr>
+  <tr>
+    <td><code>src/types/index.ts</code></td>
+    <td>TypeScript interfaces for config, event payloads, and the <code>UiEventName</code> union type.</td>
+    <td>34</td>
+  </tr>
+</table>
+
+<h3>Class Diagram</h3>
+
+<div class="diagram">
+  <div style="max-width: 420px; margin: 0 auto;">
+    <!-- BasePlugin -->
+    <div class="class-box" style="max-width: 260px; margin: 0 auto;">
+      <div class="class-header">BasePlugin</div>
+      <div class="class-body" style="text-align: center; color: #666; font-style: italic;">Kaltura Player plugin base class</div>
+    </div>
+    <div class="inherit-arrow">&#x25B3;<br>extends</div>
+    <!-- AwsAnalytics -->
+    <div class="class-box">
+      <div class="class-header">AwsAnalytics</div>
+      <div class="class-header-sub">Main Plugin Class</div>
+      <div class="class-body">
+        <table style="width: 100%; font-size: 8.5pt; border-collapse: collapse;">
+          <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 4px 0; font-weight: 600;" colspan="2">LibraBridge (event dispatcher)</td>
+          </tr>
+          <tr><td style="padding: 2px 8px 2px 12px;"><code>sendAnalyticsEvent()</code></td><td style="color: #666;">&#x2192; document</td></tr>
+          <tr><td style="padding: 2px 8px 2px 12px;"><code>sendLoggerEvent()</code></td><td style="color: #666;">&#x2192; document</td></tr>
+          <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 2px 8px 4px 12px;"><code>sendStateEvent()</code></td><td style="color: #666;">&#x2192; document.body</td></tr>
+          <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 4px 0; font-weight: 600;" colspan="2">Internal State</td>
+          </tr>
+          <tr><td style="padding: 2px 8px 2px 12px;"><code>_firedEvents: Set&lt;string&gt;</code></td><td style="color: #666;">fire-once dedup</td></tr>
+          <tr><td style="padding: 2px 8px 2px 12px;"><code>_isEnded / _isSeeking</code></td><td style="color: #666;">state flags</td></tr>
+          <tr><td style="padding: 2px 8px 2px 12px;"><code>_bufferStartTime</code></td><td style="color: #666;">buffer metric timing</td></tr>
+          <tr><td style="padding: 2px 8px 2px 12px;"><code>_watchTimeSentThisCycle</code></td><td style="color: #666;">WatchTime dedup</td></tr>
+          <tr><td style="padding: 2px 8px 2px 12px;"><code>_pendingPauseTimer</code></td><td style="color: #666;">pause deferral</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 7 ── -->
+<h2>7. Event Implementation Details</h2>
+
+<h3>7.1 Play</h3>
+<p>Listens to: <code>FIRST_PLAYING</code><br>
+The Kaltura Player fires <code>FIRST_PLAYING</code> exactly once per media load, so this maps directly. Also sends a <code>play</code> state broadcast.</p>
+
+<h3>7.2 Pause</h3>
+<p>Listens to: <code>PAUSE</code><br>
+This is the most complex event due to false positives. The Kaltura Player fires <code>PAUSE</code> during seeks and at video end. The plugin uses a <strong>deferred dispatch</strong> pattern:</p>
+<ol>
+  <li>On <code>PAUSE</code>, schedule a <code>setTimeout(0)</code> callback</li>
+  <li>When the callback runs, check if <code>_isSeeking</code> or <code>_isEnded</code> is true</li>
+  <li>If either is true, suppress the Pause analytics event</li>
+  <li>The state broadcast (<code>state: pause</code>) fires immediately (not deferred) for user-initiated pauses, but is suppressed during seek and at video end (where <code>_onEnded</code> handles it instead)</li>
+</ol>
+
+<h3>7.3 Replay</h3>
+<p>Listens to: <code>PLAYING</code><br>
+When <code>PLAYING</code> fires and <code>_isEnded</code> is <code>true</code>, this means the viewer is watching again after the video ended. The plugin fires the <code>Replay</code> event and resets <code>_isEnded</code>.</p>
+
+<h3>7.4 Watch &amp; Complete</h3>
+<p>Listens to: <code>TIME_UPDATE</code><br>
+On every time update, the plugin calculates actual watched duration from the HTML5 <code>video.played</code> TimeRanges (which excludes seeked-over segments). If the duration exceeds <code>watchThresholdSeconds</code>, the <code>Watch</code> event fires. If the ratio of watched-to-total exceeds <code>completeThresholdPercent</code>, the <code>Complete</code> event fires with the total duration.</p>
+
+<h3>7.5 WatchTime</h3>
+<p>Listens to: <code>visibilitychange</code>, <code>pagehide</code>, <code>beforeunload</code><br>
+Captures total seconds watched and sends them when the user leaves the page or tabs away. Uses <code>_watchTimeSentThisCycle</code> to prevent duplicate sends within a single hidden-cycle, and resets when the tab becomes visible again.</p>
+
+<h3>7.6 VolumeChange &amp; FullScreenChange</h3>
+<p>Listens to: <code>VOLUME_CHANGE</code>, <code>ENTER_FULLSCREEN</code>, <code>EXIT_FULLSCREEN</code><br>
+Straightforward fire-once events with no additional logic.</p>
+
+<h3>7.7 SeekForward, SeekBackward, TranscriptToggle, QualityChange</h3>
+<p>These are <strong>not triggered by player events</strong>. They must be called explicitly by the host application's UI code via the <code>sendUiEvent()</code> API. This is because seeking direction, transcript state, and quality selection are UI-level decisions the player doesn't expose natively.</p>
+
+<h3>7.8 VideoBufferTime (Logger Metric)</h3>
+<p>Listens to: <code>PLAYER_STATE_CHANGED</code><br>
+When the player enters <code>BUFFERING</code> state, a timestamp is recorded. When it exits, the duration is calculated and sent on the logger channel. This fires every time buffering occurs (not fire-once).</p>
+
+<h3>7.9 State Broadcasts</h3>
+<p>State events (<code>play</code>, <code>pause</code>, <code>ended</code>) fire on <strong>every occurrence</strong>, not fire-once. At natural video end, the plugin explicitly sends <code>pause</code> then <code>ended</code> in sequence to match the real AWS TV player's ordering.</p>
+
+<!-- ── 8 ── -->
+<h2>8. CustomEvent Channel Reference</h2>
+
+<table>
+  <tr><th>Channel Name</th><th>DOM Target</th><th>Purpose</th><th>Events Sent</th></tr>
+  <tr>
+    <td><code>custom_aws_eb-analytics_notify-listener</code></td>
+    <td><code>document</code></td>
+    <td>Primary analytics events consumed by Libra</td>
+    <td>All 12 analytics events (Play, Pause, Watch, WatchTime, etc.)</td>
+  </tr>
+  <tr>
+    <td><code>custom_aws_eb-logger_notify-listener</code></td>
+    <td><code>document</code></td>
+    <td>Operational metrics (buffering performance)</td>
+    <td>VideoBufferTime</td>
+  </tr>
+  <tr>
+    <td><code>custom_awstv_video-player-state</code></td>
+    <td><code>document.body</code></td>
+    <td>Real-time player state for UI synchronization</td>
+    <td>play, pause, ended</td>
+  </tr>
+</table>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Important: DOM Target Difference</div>
+  The analytics and logger channels dispatch on <code>document</code>, but the state channel dispatches on <code>document.body</code>. This matches the real AWS TV player's behavior. Listeners must be attached to the correct target.
+</div>
+
+<!-- ── 9 ── -->
+<h2>9. Payload Schemas</h2>
+
+<h3>Analytics Event Payload</h3>
+<pre><code>{
+  "type": "awsTvVideo",           // always this literal
+  "name": "Play",                 // event name
+  "videoId": "1_abc123",          // auto-resolved or from config override
+  "videoTitle": "My Video",       // auto-resolved or from config override
+  // Optional fields (event-specific):
+  "duration": "574",              // Complete event only — rounded seconds
+  "timestamp": "1714000000000",   // WatchTime only — Date.now() as string
+  "watchTime": "145",             // WatchTime only — rounded seconds watched
+}</code></pre>
+
+<h3>Logger Event Payload (Buffer Metric)</h3>
+<pre><code>{
+  "logLevel": "info",
+  "namespace": "VideoPlayer",
+  "orgId": "awsm_tv",            // from config.orgId (default: "awsm_tv")
+  "metricName": "VideoBufferTime",
+  "payload": {
+    "duration": 1.234,            // seconds as number
+    "unit": "Seconds"
+  }
+}</code></pre>
+
+<h3>State Broadcast Payload</h3>
+<pre><code>{
+  "state": "play",                // "play" | "pause" | "ended"
+  "videoId": "1_abc123"           // from config
+}</code></pre>
+
+<!-- ── 10 ── -->
+<h2>10. Edge Case Handling</h2>
+
+<table>
+  <tr><th>Scenario</th><th>Behavior</th><th>How It Works</th></tr>
+  <tr>
+    <td>Seek triggers PAUSE event</td>
+    <td>Pause analytics event suppressed</td>
+    <td><code>_isSeeking</code> flag is set on <code>SEEKING</code>, cleared on <code>SEEKED</code>. The deferred Pause handler checks this flag.</td>
+  </tr>
+  <tr>
+    <td>Video ends naturally (triggers PAUSE then ENDED)</td>
+    <td>Pause analytics event suppressed; state broadcasts fire as <code>pause</code> then <code>ended</code></td>
+    <td><code>_onEnded()</code> sets <code>_isEnded=true</code> and sends both state events. <code>_onPause()</code> checks <code>_isEnded</code> to suppress duplicates.</td>
+  </tr>
+  <tr>
+    <td>Viewer seeks without playing (scrubbing)</td>
+    <td>No Watch/Complete inflation</td>
+    <td>Watch time is calculated from <code>video.played</code> TimeRanges, which only counts actual playback, not seeked-over segments.</td>
+  </tr>
+  <tr>
+    <td>Rapid tab switching</td>
+    <td>WatchTime fires once per hidden cycle</td>
+    <td><code>_watchTimeSentThisCycle</code> prevents double-send. Resets when tab becomes visible.</td>
+  </tr>
+  <tr>
+    <td>New media loaded</td>
+    <td>All fire-once events can fire again</td>
+    <td><code>loadMedia()</code> clears <code>_firedEvents</code>, resets all flags, clears pending timers.</td>
+  </tr>
+  <tr>
+    <td>Player duration is null (live or loading)</td>
+    <td>Complete event safely skipped</td>
+    <td><code>duration ?? 0</code> null-coalescing ensures no division-by-zero or NaN.</td>
+  </tr>
+</table>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART III — INTEGRATION & DEPLOYMENT
+     ════════════════════════════════════════════════════════════════ -->
+<div class="part-divider">
+  <h2>Part III</h2>
+  <p>Integration &amp; Deployment</p>
+</div>
+
+<!-- ── 12 ── -->
+<h2>12. Installation &amp; Setup</h2>
+
+<h3>Option A: Script Tag (Recommended for AWS TV)</h3>
+<pre><code>&lt;!-- 1. Load the Kaltura Player --&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/@playkit-js/kaltura-player-js@latest
+  /dist/kaltura-ovp-player.js"&gt;&lt;/script&gt;
+
+&lt;!-- 2. Load the plugin (after the player) --&gt;
+&lt;script src="playkit-aws-analytics.js"&gt;&lt;/script&gt;
+
+&lt;!-- 3. Set up the player — zero-config (videoId and videoTitle auto-resolve) --&gt;
+&lt;script&gt;
+  const player = KalturaPlayer.setup({
+    targetId: 'player-container',
+    provider: {
+      partnerId: YOUR_PARTNER_ID,
+      uiConfId: YOUR_UICONF_ID
+    },
+    plugins: {
+      awsAnalytics: {}   // videoId &amp; videoTitle auto-resolve from the entry
+    }
+  });
+  player.loadMedia({ entryId: '1_abc123' });
+&lt;/script&gt;</code></pre>
+
+<h4>With Explicit Overrides</h4>
+<pre><code>plugins: {
+  awsAnalytics: {
+    videoId: 'custom-id',           // overrides player.sources.id
+    videoTitle: 'Custom Title',     // overrides player.sources.metadata.name
+    orgId: 'my_org',               // overrides default 'awsm_tv'
+    watchThresholdSeconds: 15,      // fire Watch after 15s instead of 30s
+    completeThresholdPercent: 0.90  // fire Complete at 90% instead of 95%
+  }
+}</code></pre>
+
+<h3>Option B: NPM</h3>
+<pre><code>npm install @playkit-js/playkit-js-aws-analytics</code></pre>
+<pre><code>import '@playkit-js/playkit-js-aws-analytics';
+// Plugin auto-registers as 'awsAnalytics' on import</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">Auto-Registration</div>
+  The plugin registers itself automatically when the script loads. No manual registration code is needed. Just include it in your player config's <code>plugins</code> object.
+</div>
+
+<!-- ── 13 ── -->
+<h2>13. UI Event API</h2>
+
+<p>Four events cannot be detected from native player events and must be triggered by the host application's custom UI controls:</p>
+
+<pre><code>// Get the plugin instance
+const plugin = player._pluginManager.get('awsAnalytics');
+
+// Call sendUiEvent with one of the four allowed event names:
+plugin.sendUiEvent('SeekForward');
+plugin.sendUiEvent('SeekBackward');
+plugin.sendUiEvent('TranscriptToggle');
+plugin.sendUiEvent('QualityChange');</code></pre>
+
+<p>These are type-safe &mdash; TypeScript will only accept the four valid event names:</p>
+<pre><code>type UiEventName = 'SeekBackward' | 'SeekForward' | 'TranscriptToggle' | 'QualityChange';</code></pre>
+
+<p>Like all other analytics events, UI events are <strong>fire-once per media session</strong>. Calling <code>sendUiEvent('SeekForward')</code> multiple times will only dispatch the CustomEvent the first time.</p>
+
+<!-- ── 14 ── -->
+<h2>14. Listening to Events (Consumer Side)</h2>
+
+<p>The Libra framework (or any consumer) listens for these events using standard DOM event listeners:</p>
+
+<pre><code>// Analytics events (all 12)
+document.addEventListener('custom_aws_eb-analytics_notify-listener', (e) => {
+  console.log('Analytics:', e.detail);
+  // { type: 'awsTvVideo', name: 'Play', videoId: '...', videoTitle: '...' }
+});
+
+// Buffer metrics
+document.addEventListener('custom_aws_eb-logger_notify-listener', (e) => {
+  console.log('Logger:', e.detail);
+  // { logLevel: 'info', namespace: 'VideoPlayer', ... }
+});
+
+// Player state (note: document.body, not document)
+document.body.addEventListener('custom_awstv_video-player-state', (e) => {
+  console.log('State:', e.detail);
+  // { state: 'play', videoId: '...' }
+});</code></pre>
+
+<!-- ── 15 ── -->
+<h2>15. Development Workflow</h2>
+
+<table>
+  <tr><th>Command</th><th>What It Does</th></tr>
+  <tr><td><code>npm run serve</code></td><td>Starts webpack dev server with the demo page at <code>http://localhost:8080</code></td></tr>
+  <tr><td><code>npm run build</code></td><td>Production build &rarr; <code>dist/playkit-aws-analytics.js</code> (minified UMD, ~9.5 KB)</td></tr>
+  <tr><td><code>npm run type-check</code></td><td>Runs TypeScript compiler in check-only mode</td></tr>
+  <tr><td><code>npm run lint</code></td><td>ESLint + Prettier check</td></tr>
+  <tr><td><code>npm test</code></td><td>Full pipeline: build &rarr; copy bundle &rarr; Cypress E2E (37 tests in Chrome)</td></tr>
+  <tr><td><code>npm run test:watch</code></td><td>Same as test but opens Cypress interactive runner</td></tr>
+</table>
+
+<!-- ── 16 ── -->
+<h2>16. Test Coverage</h2>
+
+<p>The Cypress E2E test suite contains <strong>37 tests</strong> running against a real Kaltura Player instance with a real video entry. Every test loads the player, performs real playback actions, and asserts on captured CustomEvents.</p>
+
+<table>
+  <tr><th>Category</th><th># Tests</th><th>What's Covered</th></tr>
+  <tr><td>Play</td><td>2</td><td>First play fires once, doesn't re-fire on pause/resume</td></tr>
+  <tr><td>Pause</td><td>4</td><td>User pause, seek suppression, end suppression, fire-once dedup</td></tr>
+  <tr><td>VolumeChange</td><td>1</td><td>Fire-once across multiple changes</td></tr>
+  <tr><td>FullScreenChange</td><td>1</td><td>Fire-once dedup</td></tr>
+  <tr><td>UI Events</td><td>2</td><td>All 4 UI events fire once each</td></tr>
+  <tr><td>State Broadcasts</td><td>4</td><td>Play repeats, ended fires, pause-before-ended ordering, seek suppression</td></tr>
+  <tr><td>Replay</td><td>2</td><td>Fires after ended, doesn't fire on normal resume</td></tr>
+  <tr><td>Watch Threshold</td><td>3</td><td>Fires at threshold, doesn't fire before, correct payload</td></tr>
+  <tr><td>Complete Threshold</td><td>3</td><td>Fires at threshold, includes duration, doesn't fire below</td></tr>
+  <tr><td>WatchTime</td><td>3</td><td>Fires on hidden, no double-fire, re-fires after visible cycle</td></tr>
+  <tr><td>loadMedia Reset</td><td>3</td><td>Fire-once resets, pending pause cleared, WatchTime tracking resets</td></tr>
+  <tr><td>Payload Schema</td><td>2</td><td>Base fields correct, state events include videoId</td></tr>
+  <tr><td>Buffer Metrics</td><td>1</td><td>Logger channel schema validation (when buffering occurs)</td></tr>
+  <tr><td>Plugin Instantiation</td><td>2</td><td>Plugin accessible, config merged with defaults (incl. orgId)</td></tr>
+  <tr><td>Auto-Resolve</td><td>4</td><td>videoId from sources, videoTitle from metadata, config override priority, state broadcast auto-resolve</td></tr>
+</table>
+
+<div class="callout callout-success">
+  <div class="callout-title">37 / 37 Tests Passing</div>
+  All tests pass against a live Kaltura OVP endpoint with a real video entry. The test suite runs in ~4.5 minutes on Chrome.
+</div>
+
+<!-- ── 17 ── -->
+<h2>17. Production Deployment Checklist</h2>
+
+<ol>
+  <li><strong>Build the production bundle:</strong>
+    <pre><code>npm run build</code></pre>
+    This produces <code>dist/playkit-aws-analytics.js</code> (~9.5 KB minified) and its source map.
+  </li>
+
+  <li><strong>Run the full test suite:</strong>
+    <pre><code>npm test</code></pre>
+    Ensure 37/37 tests pass.
+  </li>
+
+  <li><strong>Deploy the bundle file</strong> to your CDN or static asset server alongside the Kaltura Player script.</li>
+
+  <li><strong>Add the script tag</strong> to your page, after the Kaltura Player script.</li>
+
+  <li><strong>Add the plugin config</strong> to your <code>KalturaPlayer.setup()</code> call. An empty <code>awsAnalytics: {}</code> is sufficient &mdash; videoId and videoTitle auto-resolve from the Kaltura entry metadata. Override only if needed.</li>
+
+  <li><strong>Wire up UI events</strong> in your custom controls (seek buttons, transcript toggle, quality selector) by calling <code>plugin.sendUiEvent()</code>.</li>
+
+  <li><strong>Verify in production:</strong> Open browser DevTools, go to the Console, and paste:
+    <pre><code>document.addEventListener('custom_aws_eb-analytics_notify-listener',
+  (e) => console.log('Analytics:', e.detail));</code></pre>
+    Play the video and confirm events appear.
+  </li>
+</ol>
+
+<!-- ── 18 ── -->
+<h2>18. Important Considerations</h2>
+
+<h3>18.1 Fire-Once Semantics</h3>
+<p>All analytics events (except WatchTime) fire <strong>at most once per media session</strong>. When <code>loadMedia()</code> is called (e.g., switching to a new video), all fire-once tracking resets. This matches the original AWS TV player's behavior exactly.</p>
+
+<h3>18.2 State Broadcast Ordering at Video End</h3>
+<p>When a video ends naturally, the plugin sends <code>state: pause</code> immediately followed by <code>state: ended</code>. This matches the exact ordering observed in the production AWS TV player (confirmed via browser captures). Downstream consumers that depend on seeing a <code>pause</code> before <code>ended</code> will continue working.</p>
+
+<h3>18.3 WatchTime and Page Lifecycle</h3>
+<p>WatchTime uses three mechanisms to capture data before the page unloads: <code>visibilitychange</code>, <code>pagehide</code>, and <code>beforeunload</code>. This triple-listener approach maximizes reliability across browsers. The <code>CustomEvent</code> dispatch is synchronous, so the data is captured even during rapid tab/page closure.</p>
+
+<h3>18.4 Watch Duration Accuracy</h3>
+<p>Watched time is calculated from the HTML5 <code>video.played</code> TimeRanges, which tracks only actual playback segments. Seeking over content does not inflate the watch count. This is more accurate than simple elapsed-time tracking.</p>
+
+<h3>18.5 Plugin Access Pattern</h3>
+<p>The plugin is accessed at runtime via <code>player._pluginManager.get('awsAnalytics')</code>. While <code>_pluginManager</code> is technically an internal API, this is the standard pattern used by all Kaltura playkit-js plugins and is stable across player versions.</p>
+
+<h3>18.6 Bundle Size</h3>
+<p>The production bundle is <strong>~9.5 KB</strong> minified (with source map). It has <strong>zero runtime dependencies</strong> beyond the Kaltura Player itself. The only external reference is <code>BasePlugin</code> from <code>@playkit-js/kaltura-player-js</code>, which is resolved as a webpack external (the player is already loaded on the page).</p>
+
+<h3>18.7 Browser Compatibility</h3>
+<p>The plugin is compiled via Babel with the Kaltura Player's shared browserslist config, targeting the same browsers as the player itself. It uses only standard DOM APIs (<code>CustomEvent</code>, <code>EventTarget</code>, <code>TimeRanges</code>, <code>visibilitychange</code>) available in all modern browsers.</p>
+
+<h3>18.8 Auto-Resolution of videoId and videoTitle</h3>
+<p>The plugin reads <code>player.sources.id</code> and <code>player.sources.metadata.name</code> at the moment each event fires (not at construction time). This means:</p>
+<ul>
+  <li>After <code>loadMedia()</code>, the values update automatically for the new entry</li>
+  <li>No manual config update is needed when switching videos in a playlist</li>
+  <li>Explicit config values always take priority over auto-resolved values</li>
+</ul>
+
+<h3>18.9 CI/CD</h3>
+<p>Three GitHub Actions workflows are included:</p>
+<ul>
+  <li><strong>Pull Requests:</strong> Runs Cypress tests, build, and lint</li>
+  <li><strong>Canary (push to main):</strong> Runs tests and publishes a canary npm version</li>
+  <li><strong>Production (manual dispatch):</strong> Full build/lint/type-check, then publishes to npm and deploys to CDN</li>
+</ul>
+
+<div class="footer-note">
+  playkit-js-aws-analytics v1.0.0 &middot; AGPL-3.0 License &middot; April 2026
+</div>
+
+</body>
+</html>

@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>playkit-js-aws-analytics — Live Demo &amp; Guide</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-alt: #162032;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.15);
+    --green: #22c55e;
+    --green-bg: rgba(34, 197, 94, 0.1);
+    --amber: #f59e0b;
+    --amber-bg: rgba(245, 158, 11, 0.1);
+    --cyan: #06b6d4;
+    --cyan-bg: rgba(6, 182, 212, 0.1);
+    --purple: #a855f7;
+    --red: #ef4444;
+    --code-bg: #0d1520;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--cyan);
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--accent-glow);
+    color: var(--accent);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+  .hero h1 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #e2e8f0, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--text-muted);
+    font-size: 17px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .hero-links {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+  }
+  .hero-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: color 0.15s;
+  }
+  .hero-links a:hover { color: var(--accent); text-decoration: none; }
+
+  /* ── Sections ── */
+  section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 15px;
+    margin-bottom: 28px;
+    max-width: 700px;
+  }
+
+  /* ── Player area ── */
+  .player-wrapper {
+    background: #000;
+    border-radius: var(--radius);
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    max-width: 800px;
+    margin: 0 auto 20px;
+    border: 1px solid var(--border);
+  }
+  #player-container { width: 100%; height: 100%; }
+
+  /* ── Controls strip ── */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .btn {
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { background: #2a3a52; border-color: var(--accent); }
+  .btn:active { transform: scale(0.97); }
+  .btn.fired {
+    background: var(--green-bg);
+    border-color: var(--green);
+    color: var(--green);
+    cursor: default;
+  }
+  .btn-danger { border-color: #7f1d1d; color: var(--red); }
+  .btn-danger:hover { background: rgba(239, 68, 68, 0.1); border-color: var(--red); }
+  .btn-icon { font-size: 15px; }
+
+  /* ── Event log ── */
+  .event-log-wrapper {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .log-header .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-muted);
+  }
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .event-log {
+    height: 280px;
+    overflow-y: auto;
+    padding: 8px 0;
+    font-family: "SF Mono", "Fira Code", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .event-log::-webkit-scrollbar { width: 6px; }
+  .event-log::-webkit-scrollbar-track { background: transparent; }
+  .event-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .log-entry {
+    padding: 2px 16px;
+    display: flex;
+    gap: 8px;
+    transition: background 0.15s;
+  }
+  .log-entry:hover { background: rgba(255,255,255,0.03); }
+  .log-entry.new { animation: flash 0.6s ease-out; }
+  @keyframes flash { from { background: rgba(59, 130, 246, 0.15); } to { background: transparent; } }
+  .log-ts { color: var(--text-dim); flex-shrink: 0; }
+  .log-channel {
+    flex-shrink: 0;
+    width: 72px;
+    font-weight: 600;
+    text-align: right;
+  }
+  .log-channel.analytics { color: var(--cyan); }
+  .log-channel.state { color: var(--green); }
+  .log-channel.logger { color: var(--amber); }
+  .log-detail { color: var(--text-muted); word-break: break-all; }
+  .log-empty {
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--text-dim);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+  }
+  .event-counter {
+    background: var(--bg);
+    color: var(--text-muted);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+
+  /* ── Architecture diagram ── */
+  .arch-flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 24px 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .arch-box {
+    flex: 1;
+    min-width: 160px;
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    text-align: center;
+    border: 2px solid;
+    position: relative;
+  }
+  .arch-box h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .arch-box p { font-size: 12px; opacity: 0.8; }
+  .arch-box.viewer { border-color: var(--text-dim); background: rgba(100, 116, 139, 0.1); color: var(--text); }
+  .arch-box.kaltura { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+  .arch-box.plugin { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+  .arch-box.libra { border-color: var(--purple); background: rgba(168, 85, 247, 0.1); color: var(--purple); }
+  .arch-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 22px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .channels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .channel-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    border-left: 3px solid;
+  }
+  .channel-card.ch-analytics { border-left-color: var(--cyan); }
+  .channel-card.ch-state { border-left-color: var(--green); }
+  .channel-card.ch-logger { border-left-color: var(--amber); }
+  .channel-card h4 { font-size: 14px; margin-bottom: 4px; }
+  .channel-card .ch-name { font-size: 11px; color: var(--text-dim); word-break: break-all; }
+  .channel-card .ch-target { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+  .channel-card .ch-desc { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+
+  /* ── Events table ── */
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .event-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    transition: border-color 0.15s;
+  }
+  .event-card:hover { border-color: var(--accent); }
+  .event-card h4 { font-size: 14px; margin-bottom: 4px; color: var(--text); }
+  .event-card p { font-size: 12px; color: var(--text-muted); }
+  .event-card .event-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+  }
+  .tag-once { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+  .tag-multi { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    margin: 16px 0;
+    position: relative;
+  }
+  .code-block .kw { color: var(--purple); }
+  .code-block .str { color: var(--green); }
+  .code-block .cm { color: var(--text-dim); font-style: italic; }
+  .code-block .fn { color: var(--cyan); }
+  .code-block .obj { color: var(--amber); }
+  .code-label {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Config table ── */
+  .config-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .config-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    border-bottom: 2px solid var(--border);
+  }
+  .config-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .config-table tr:last-child td { border-bottom: none; }
+  .config-table .default { color: var(--amber); font-family: "SF Mono", Menlo, monospace; font-size: 12px; }
+
+  /* ── Callout ── */
+  .callout {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-left: 3px solid var(--accent);
+  }
+  .callout-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; color: var(--accent); }
+  .callout p { font-size: 13px; color: var(--text-muted); }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 0; margin-bottom: 0; }
+  .tab {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text-muted); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── Footer ── */
+  footer {
+    padding: 32px 0;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer a { color: var(--text-muted); }
+
+  /* ── Status indicator ── */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .status-pill.connected { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .status-pill.error { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .hero h1 { font-size: 26px; }
+    .arch-flow { flex-direction: column; align-items: center; }
+    .arch-arrow { transform: rotate(90deg); padding: 4px 0; }
+    .arch-box { min-width: unset; width: 100%; max-width: 300px; }
+    .player-wrapper { aspect-ratio: auto; height: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ HERO ════════════════════ -->
+<div class="container">
+<div class="hero">
+  <div class="hero-badge">Kaltura Player Plugin</div>
+  <h1>playkit-js-aws-analytics</h1>
+  <p>Drop-in Kaltura Player plugin that bridges all 12 AWS TV analytics events to the Libra framework via CustomEvent dispatch.</p>
+  <div class="hero-links">
+    <a href="https://github.com/niceDev0908/playkit-js-aws-analytics">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+    <a href="https://www.npmjs.com/package/@playkit-js/playkit-js-aws-analytics">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 0v16h16V0H0zm13 13H8V5h3v8h2V3H3v10H0V0h16v13h-3z"/></svg>
+      npm
+    </a>
+    <a href="playkit-js-aws-analytics-guide.pdf">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 0a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4.5L9.5 0H4zm5.5 1.5L13 5h-2.5a1 1 0 01-1-1V1.5zM5 7h6v1H5V7zm0 2h6v1H5V9zm0 2h4v1H5v-1z"/></svg>
+      PDF Guide
+    </a>
+  </div>
+</div>
+
+<!-- ════════════════════ LIVE DEMO ════════════════════ -->
+<section id="demo">
+  <div class="section-label">Interactive</div>
+  <div class="section-title">Live Demo</div>
+  <div class="section-desc">
+    The player below runs the real plugin. Play the video, seek, pause, change volume, go fullscreen — every action is captured in the event log below.
+  </div>
+
+  <div id="status-area">
+    <div class="status-pill" id="status-pill" style="display:none;">
+      <span class="status-dot"></span>
+      <span id="status-text"></span>
+    </div>
+  </div>
+
+  <div class="player-wrapper">
+    <div id="player-container"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" onclick="doSeekBack()" title="Sends SeekBackward UI event">
+      <span class="btn-icon">&#x23EA;</span> Seek -10s
+    </button>
+    <button class="btn" onclick="doSeekFwd()" title="Sends SeekForward UI event">
+      <span class="btn-icon">&#x23E9;</span> Seek +10s
+    </button>
+    <button class="btn" id="btn-transcript" onclick="doTranscript()" title="Sends TranscriptToggle UI event">
+      <span class="btn-icon">&#x1F4DD;</span> Transcript
+    </button>
+    <button class="btn" id="btn-quality" onclick="doQuality()" title="Sends QualityChange UI event">
+      <span class="btn-icon">&#x2699;</span> Quality
+    </button>
+    <button class="btn btn-danger" onclick="clearLog()" title="Clear the event log">
+      <span class="btn-icon">&#x1F5D1;</span> Clear
+    </button>
+  </div>
+
+  <div class="event-log-wrapper">
+    <div class="log-header">
+      <div>
+        Event Log
+        <span class="event-counter" id="event-count">0 events</span>
+      </div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span> Analytics</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> State</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span> Logger</span>
+      </div>
+    </div>
+    <div class="event-log" id="event-log">
+      <div class="log-empty">Play the video to see events appear here in real time.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ ARCHITECTURE ════════════════════ -->
+<section id="architecture">
+  <div class="section-label">Architecture</div>
+  <div class="section-title">How It Works</div>
+  <div class="section-desc">
+    The plugin sits between the Kaltura Player and the Libra analytics framework, translating native player events into the exact CustomEvent format Libra expects.
+  </div>
+
+  <div class="arch-flow">
+    <div class="arch-box viewer">
+      <h4>Viewer</h4>
+      <p>Clicks play, pauses, seeks, changes volume&hellip;</p>
+    </div>
+    <div class="arch-arrow">&#x2192;</div>
+    <div class="arch-box kaltura">
+      <h4>Kaltura Player</h4>
+      <p>Fires native events: PLAYING, PAUSE, TIME_UPDATE&hellip;</p>
+    </div>
+    <div class="arch-arrow">&#x2192;</div>
+    <div class="arch-box plugin">
+      <h4>AWS Analytics Plugin</h4>
+      <p>Dedup, thresholds, seek filtering, payload formatting</p>
+    </div>
+    <div class="arch-arrow">&#x2192;</div>
+    <div class="arch-box libra">
+      <h4>Libra Framework</h4>
+      <p>Listens for CustomEvents, handles network transport</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 32px; margin-bottom: 16px; font-size: 18px;">3 CustomEvent Channels</h3>
+  <div class="channels-grid">
+    <div class="channel-card ch-analytics">
+      <h4>Analytics</h4>
+      <div class="ch-name"><code>custom_aws_eb-analytics_notify-listener</code></div>
+      <div class="ch-target">Target: <code>document</code></div>
+      <div class="ch-desc">All 12 analytics events (Play, Pause, Watch, Complete, etc.) with video metadata.</div>
+    </div>
+    <div class="channel-card ch-state">
+      <h4>State</h4>
+      <div class="ch-name"><code>custom_awstv_video-player-state</code></div>
+      <div class="ch-target">Target: <code>document.body</code></div>
+      <div class="ch-desc">Player state broadcasts: play, pause, ended. Fires every time (not deduped).</div>
+    </div>
+    <div class="channel-card ch-logger">
+      <h4>Logger</h4>
+      <div class="ch-name"><code>custom_aws_eb-logger_notify-listener</code></div>
+      <div class="ch-target">Target: <code>document</code></div>
+      <div class="ch-desc">Buffer duration metrics. Fires each time the player exits a buffering state.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ EVENTS ════════════════════ -->
+<section id="events">
+  <div class="section-label">Reference</div>
+  <div class="section-title">12 Analytics Events</div>
+  <div class="section-desc">
+    All fire-once events reset when <code>loadMedia()</code> is called. WatchTime is the only event that can fire multiple times per session.
+  </div>
+
+  <div class="events-grid">
+    <div class="event-card">
+      <h4>Play</h4>
+      <p>First playback starts (FIRST_PLAYING)</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>Pause</h4>
+      <p>User pauses (deferred, filtered during seek/ended)</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>Replay</h4>
+      <p>Playback resumes after ended state</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>Watch</h4>
+      <p>Accumulated watch time exceeds threshold (default 30s)</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>Complete</h4>
+      <p>Watch ratio exceeds threshold (default 95%)</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>WatchTime</h4>
+      <p>Page hidden or unloaded — sends accumulated watch time</p>
+      <span class="event-tag tag-multi">repeatable</span>
+    </div>
+    <div class="event-card">
+      <h4>VolumeChange</h4>
+      <p>Volume level changed</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>FullScreenChange</h4>
+      <p>Enter or exit fullscreen mode</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>SeekForward</h4>
+      <p>UI-triggered forward seek</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>SeekBackward</h4>
+      <p>UI-triggered backward seek</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>TranscriptToggle</h4>
+      <p>Transcript panel toggled via UI</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+    <div class="event-card">
+      <h4>QualityChange</h4>
+      <p>Video quality changed via UI</p>
+      <span class="event-tag tag-once">fire-once</span>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ SETUP ════════════════════ -->
+<section id="setup">
+  <div class="section-label">Getting Started</div>
+  <div class="section-title">Setup</div>
+  <div class="section-desc">
+    Load the plugin after the Kaltura Player script. An empty config object is all you need.
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="zero-config">Zero Config</div>
+    <div class="tab" data-tab="custom-config">Custom Config</div>
+    <div class="tab" data-tab="ui-events">UI Events API</div>
+  </div>
+
+  <div class="tab-content active" id="tab-zero-config">
+    <div class="code-block">
+      <span class="code-label">HTML</span>
+<span class="cm">&lt;!-- 1. Kaltura Player --&gt;</span>
+<span class="kw">&lt;script</span> <span class="obj">src</span>=<span class="str">"https://cdn.jsdelivr.net/npm/@playkit-js/kaltura-player-js@latest/dist/kaltura-ovp-player.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+
+<span class="cm">&lt;!-- 2. Plugin (auto-registers as 'awsAnalytics') --&gt;</span>
+<span class="kw">&lt;script</span> <span class="obj">src</span>=<span class="str">"playkit-aws-analytics.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+
+<span class="kw">&lt;script&gt;</span>
+  <span class="kw">const</span> player = KalturaPlayer.<span class="fn">setup</span>({
+    <span class="obj">targetId</span>: <span class="str">'player-container'</span>,
+    <span class="obj">provider</span>: { <span class="obj">partnerId</span>: <span class="str">YOUR_PARTNER_ID</span> },
+    <span class="obj">plugins</span>: {
+      <span class="obj">awsAnalytics</span>: {} <span class="cm">// That's it. videoId &amp; videoTitle auto-resolve.</span>
+    }
+  });
+  player.<span class="fn">loadMedia</span>({ <span class="obj">entryId</span>: <span class="str">'YOUR_ENTRY_ID'</span> });
+<span class="kw">&lt;/script&gt;</span>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-custom-config">
+    <div class="code-block">
+      <span class="code-label">JavaScript</span>
+<span class="obj">plugins</span>: {
+  <span class="obj">awsAnalytics</span>: {
+    <span class="obj">videoId</span>: <span class="str">'custom-id'</span>,           <span class="cm">// override auto-resolved entry ID</span>
+    <span class="obj">videoTitle</span>: <span class="str">'Custom Title'</span>,     <span class="cm">// override auto-resolved entry name</span>
+    <span class="obj">orgId</span>: <span class="str">'my_org'</span>,               <span class="cm">// default: 'awsm_tv'</span>
+    <span class="obj">watchThresholdSeconds</span>: <span class="str">15</span>,     <span class="cm">// default: 30</span>
+    <span class="obj">completeThresholdPercent</span>: <span class="str">0.90</span> <span class="cm">// default: 0.95</span>
+  }
+}
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-ui-events">
+    <div class="code-block">
+      <span class="code-label">JavaScript</span>
+<span class="cm">// Get the plugin instance</span>
+<span class="kw">const</span> plugin = player._pluginManager.<span class="fn">get</span>(<span class="str">'awsAnalytics'</span>);
+
+<span class="cm">// Call from your custom UI controls</span>
+plugin.<span class="fn">sendUiEvent</span>(<span class="str">'SeekForward'</span>);
+plugin.<span class="fn">sendUiEvent</span>(<span class="str">'SeekBackward'</span>);
+plugin.<span class="fn">sendUiEvent</span>(<span class="str">'TranscriptToggle'</span>);
+plugin.<span class="fn">sendUiEvent</span>(<span class="str">'QualityChange'</span>);
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Why no endpoint URLs or API keys?</div>
+    <p>This plugin is a <strong>CustomEvent bridge</strong>, not an HTTP transport. It dispatches browser events that the Libra framework (already on the page) listens for. Libra handles all network transport, authentication, batching, and retries.</p>
+  </div>
+</section>
+
+<!-- ════════════════════ CONFIG ════════════════════ -->
+<section id="config">
+  <div class="section-label">Options</div>
+  <div class="section-title">Configuration</div>
+  <div class="section-desc">
+    All options are optional. <code>videoId</code> and <code>videoTitle</code> auto-resolve from the Kaltura Player's media info.
+  </div>
+
+  <table class="config-table">
+    <thead>
+      <tr>
+        <th>Option</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>videoId</code></td>
+        <td>string</td>
+        <td class="default"><em>auto</em></td>
+        <td>Auto-resolved from <code>player.sources.id</code>. Set to override.</td>
+      </tr>
+      <tr>
+        <td><code>videoTitle</code></td>
+        <td>string</td>
+        <td class="default"><em>auto</em></td>
+        <td>Auto-resolved from <code>player.sources.metadata.name</code>. Set to override.</td>
+      </tr>
+      <tr>
+        <td><code>orgId</code></td>
+        <td>string</td>
+        <td class="default">'awsm_tv'</td>
+        <td>Organization ID in buffer-time logger events.</td>
+      </tr>
+      <tr>
+        <td><code>watchThresholdSeconds</code></td>
+        <td>number</td>
+        <td class="default">30</td>
+        <td>Seconds of watch time before <code>Watch</code> fires.</td>
+      </tr>
+      <tr>
+        <td><code>completeThresholdPercent</code></td>
+        <td>number</td>
+        <td class="default">0.95</td>
+        <td>Fraction of duration before <code>Complete</code> fires.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════ PAYLOAD ════════════════════ -->
+<section id="payloads">
+  <div class="section-label">Payloads</div>
+  <div class="section-title">Event Payloads</div>
+  <div class="section-desc">
+    Every analytics event includes these base fields. Some events add extra fields.
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="payload-analytics">Analytics</div>
+    <div class="tab" data-tab="payload-state">State</div>
+    <div class="tab" data-tab="payload-logger">Logger</div>
+  </div>
+
+  <div class="tab-content active" id="tab-payload-analytics">
+    <div class="code-block">
+      <span class="code-label">CustomEvent.detail</span>
+{
+  <span class="obj">"type"</span>: <span class="str">"awsTvVideo"</span>,
+  <span class="obj">"name"</span>: <span class="str">"Play"</span>,         <span class="cm">// event name</span>
+  <span class="obj">"videoId"</span>: <span class="str">"1_abc123"</span>,   <span class="cm">// auto-resolved or config</span>
+  <span class="obj">"videoTitle"</span>: <span class="str">"My Video"</span> <span class="cm">// auto-resolved or config</span>
+}
+
+<span class="cm">// Complete adds: "duration": "120"</span>
+<span class="cm">// WatchTime adds: "timestamp", "watchTime", "duration"</span>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-payload-state">
+    <div class="code-block">
+      <span class="code-label">CustomEvent.detail</span>
+{
+  <span class="obj">"state"</span>: <span class="str">"play"</span>,       <span class="cm">// "play" | "pause" | "ended"</span>
+  <span class="obj">"videoId"</span>: <span class="str">"1_abc123"</span>
+}
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-payload-logger">
+    <div class="code-block">
+      <span class="code-label">CustomEvent.detail</span>
+{
+  <span class="obj">"logLevel"</span>: <span class="str">"info"</span>,
+  <span class="obj">"namespace"</span>: <span class="str">"VideoPlayer"</span>,
+  <span class="obj">"orgId"</span>: <span class="str">"awsm_tv"</span>,
+  <span class="obj">"metricName"</span>: <span class="str">"VideoBufferTime"</span>,
+  <span class="obj">"payload"</span>: { <span class="obj">"duration"</span>: <span class="str">1.234</span>, <span class="obj">"unit"</span>: <span class="str">"Seconds"</span> }
+}
+    </div>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<footer>
+  <div class="container">
+    <p>playkit-js-aws-analytics &mdash; AGPL-3.0 License</p>
+    <p style="margin-top: 6px;">~9.5 KB minified &bull; 37 Cypress E2E tests &bull; Zero network dependencies</p>
+  </div>
+</footer>
+
+<!-- ════════════════════ SCRIPTS ════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@playkit-js/kaltura-player-js@latest/dist/kaltura-ovp-player.js"></script>
+<script>
+  // Load plugin bundle: try same-directory, fallback to ../dist/
+  (function() {
+    var s = document.createElement('script');
+    s.src = 'playkit-aws-analytics.js';
+    s.onerror = function() {
+      var f = document.createElement('script');
+      f.src = '../dist/playkit-aws-analytics.js';
+      f.onerror = function() {
+        document.getElementById('status-pill').style.display = 'inline-flex';
+        document.getElementById('status-pill').className = 'status-pill error';
+        document.getElementById('status-text').textContent = 'Plugin bundle not found — run: npm run build';
+      };
+      document.head.appendChild(f);
+    };
+    document.head.appendChild(s);
+  })();
+</script>
+<script>
+  // ── Event capture (intercept all 3 channels) ──
+  var capturedEvents = [];
+  var logEl = document.getElementById('event-log');
+  var countEl = document.getElementById('event-count');
+  var emptyCleared = false;
+
+  var origDispatch = EventTarget.prototype.dispatchEvent;
+  EventTarget.prototype.dispatchEvent = function(event) {
+    if (event instanceof CustomEvent) {
+      if (event.type === 'custom_aws_eb-analytics_notify-listener') addLog('analytics', event.detail);
+      if (event.type === 'custom_aws_eb-logger_notify-listener') addLog('logger', event.detail);
+      if (event.type === 'custom_awstv_video-player-state') addLog('state', event.detail);
+    }
+    return origDispatch.call(this, event);
+  };
+
+  function addLog(channel, detail) {
+    if (!emptyCleared) { logEl.innerHTML = ''; emptyCleared = true; }
+    capturedEvents.push({ channel: channel, detail: detail, time: Date.now() });
+    var entry = document.createElement('div');
+    entry.className = 'log-entry new';
+    var ts = new Date().toISOString().substr(11, 12);
+    var summary = summarize(channel, detail);
+    entry.innerHTML = '<span class="log-ts">' + ts + '</span>' +
+      '<span class="log-channel ' + channel + '">' + channel + '</span>' +
+      '<span class="log-detail">' + escapeHtml(summary) + '</span>';
+    logEl.prepend(entry);
+    setTimeout(function() { entry.classList.remove('new'); }, 600);
+    countEl.textContent = capturedEvents.length + ' event' + (capturedEvents.length !== 1 ? 's' : '');
+  }
+
+  function summarize(ch, d) {
+    if (ch === 'analytics') {
+      var s = d.name;
+      if (d.duration) s += '  duration=' + d.duration;
+      if (d.watchTime) s += '  watchTime=' + d.watchTime;
+      s += '  videoId=' + d.videoId;
+      return s;
+    }
+    if (ch === 'state') return d.state + '  videoId=' + d.videoId;
+    if (ch === 'logger') return d.metricName + '  duration=' + d.payload.duration.toFixed(3) + 's';
+    return JSON.stringify(d);
+  }
+
+  function escapeHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function clearLog() {
+    logEl.innerHTML = '<div class="log-empty">Log cleared. Play the video to see new events.</div>';
+    emptyCleared = false;
+    capturedEvents = [];
+    countEl.textContent = '0 events';
+  }
+
+  // ── Player setup ──
+  var player;
+  function initPlayer() {
+    try {
+      player = KalturaPlayer.setup({
+        logLevel: 'OFF',
+        targetId: 'player-container',
+        provider: { partnerId: 6492412, uiConfId: 57927432 },
+        playback: { autoplay: false },
+        plugins: { awsAnalytics: {} }
+      });
+      player.loadMedia({ entryId: '1_io380akk' });
+      window.__kalturaPlayer = player;
+      var pill = document.getElementById('status-pill');
+      pill.style.display = 'inline-flex';
+      pill.className = 'status-pill connected';
+      document.getElementById('status-text').textContent = 'Plugin active — zero config';
+    } catch(e) {
+      var pill = document.getElementById('status-pill');
+      pill.style.display = 'inline-flex';
+      pill.className = 'status-pill error';
+      document.getElementById('status-text').textContent = 'Player init failed: ' + e.message;
+    }
+  }
+  // Wait for plugin script to load
+  setTimeout(initPlayer, 500);
+
+  // ── UI event controls ──
+  function getPlugin() {
+    return player && player._pluginManager && player._pluginManager.get('awsAnalytics');
+  }
+  function doSeekBack() {
+    if (!player) return;
+    player.currentTime = Math.max(0, player.currentTime - 10);
+    var p = getPlugin(); if (p) p.sendUiEvent('SeekBackward');
+  }
+  function doSeekFwd() {
+    if (!player) return;
+    player.currentTime = player.currentTime + 10;
+    var p = getPlugin(); if (p) p.sendUiEvent('SeekForward');
+  }
+  function doTranscript() {
+    var p = getPlugin(); if (p) p.sendUiEvent('TranscriptToggle');
+    markFired('btn-transcript');
+  }
+  function doQuality() {
+    var p = getPlugin(); if (p) p.sendUiEvent('QualityChange');
+    markFired('btn-quality');
+  }
+  function markFired(id) {
+    var btn = document.getElementById(id);
+    if (btn && !btn.classList.contains('fired')) btn.classList.add('fired');
+  }
+
+  // ── Tabs ──
+  document.querySelectorAll('.tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var parent = this.parentElement;
+      var section = parent.parentElement;
+      parent.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      this.classList.add('active');
+      section.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+      var target = section.querySelector('#tab-' + this.getAttribute('data-tab'));
+      if (target) target.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

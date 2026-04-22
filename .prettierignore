@@ -1,0 +1,11 @@
+dist/
+lib/
+docs/
+api-extractor/
+.github/
+coverage/
+CHANGELOG.md
+package-lock.json
+LICENSE
+README.md
+.eslintrc.json

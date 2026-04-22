@@ -1,0 +1,30 @@
+## Canary CI/CD
+name: Canary
+run-name: Canary
+
+permissions:
+  id-token: write
+  contents: read
+  packages: read
+  actions: read
+  pull-requests: read
+  issues: write
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    uses: kaltura/playkit-js-common/.github/workflows/cypress.yml@jfrog-migration-test
+    secrets: inherit
+
+  canary:
+    if: ${{ github.actor != 'PlaykitJs-Bot' }}
+    uses: kaltura/playkit-js-common/.github/workflows/canary_plugin.yaml@jfrog-migration-test
+    secrets: inherit
+    with:
+      node-version: "24.x"
+      schema-type: "playerV3Versions"
+      tests-npm-run-to-execute: 'lint build'

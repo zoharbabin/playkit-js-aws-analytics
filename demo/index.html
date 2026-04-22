@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS Analytics Plugin — Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/@playkit-js/kaltura-player-js@latest/dist/kaltura-ovp-player.js"></script>
+    <script src="/playkit-aws-analytics.js" onerror="
+      var s=document.createElement('script');s.src='../dist/playkit-aws-analytics.js';document.head.appendChild(s);
+    "></script>
+    <style>
+      body { margin: 0; background: #1a1a2e; display: flex; flex-direction: column; align-items: center; padding-top: 40px; font-family: system-ui, sans-serif; color: #e0e0e0; }
+      h1 { font-size: 18px; margin-bottom: 16px; }
+      #player-placeholder { width: 800px; height: 450px; }
+      #event-log { width: 800px; max-height: 300px; overflow-y: auto; margin-top: 16px; background: #0d0d1a; border: 1px solid #333; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; line-height: 1.6; }
+      .log-entry { border-bottom: 1px solid #222; padding: 2px 0; }
+      .log-analytics { color: #4fc3f7; }
+      .log-state { color: #81c784; }
+      .log-logger { color: #ffb74d; }
+      .controls { width: 800px; margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+      .controls button { padding: 8px 16px; border: 1px solid #555; background: #2a2a3e; color: #e0e0e0; border-radius: 4px; cursor: pointer; font-size: 13px; transition: background 0.15s; }
+      .controls button:hover { background: #3a3a5e; }
+      .controls button:active { background: #5a5a8e; }
+      .controls button.fired { background: #1a3a1a; border-color: #4a8; color: #8c8; cursor: default; }
+      .controls button.fired::after { content: ' \2713'; }
+      .legend { width: 800px; margin-top: 8px; font-size: 11px; color: #888; display: flex; gap: 16px; }
+      .legend span { display: flex; align-items: center; gap: 4px; }
+      .legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+      .legend .dot-analytics { background: #4fc3f7; }
+      .legend .dot-state { background: #81c784; }
+      .legend .dot-logger { background: #ffb74d; }
+    </style>
+  </head>
+  <body>
+    <h1>playkit-js-aws-analytics — Live Test</h1>
+    <div id="player-placeholder"></div>
+    <div class="controls">
+      <button onclick="seekBack()">Seek -10s</button>
+      <button onclick="seekFwd()">Seek +10s</button>
+      <button id="btn-transcript" onclick="toggleTranscript(this)">Transcript Toggle</button>
+      <button id="btn-quality" onclick="changeQuality(this)">Quality Change</button>
+      <button onclick="clearLog()">Clear Log</button>
+    </div>
+    <div class="legend">
+      <span><span class="dot dot-analytics"></span> analytics</span>
+      <span><span class="dot dot-state"></span> state</span>
+      <span><span class="dot dot-logger"></span> logger</span>
+      <span style="margin-left: auto; color: #666;">fire-once events show <span style="color:#8c8">✓</span> when sent</span>
+    </div>
+    <div id="event-log"></div>
+
+    <script>
+      const logEl = document.getElementById('event-log');
+
+      function log(channel, detail) {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry log-' + channel;
+        const ts = new Date().toISOString().substr(11, 12);
+        entry.textContent = '[' + ts + '] [' + channel + '] ' + JSON.stringify(detail);
+        logEl.prepend(entry);
+      }
+
+      // Intercept all 3 CustomEvent channels
+      const origDispatch = EventTarget.prototype.dispatchEvent;
+      EventTarget.prototype.dispatchEvent = function(event) {
+        if (event instanceof CustomEvent) {
+          if (event.type === 'custom_aws_eb-analytics_notify-listener') log('analytics', event.detail);
+          if (event.type === 'custom_aws_eb-logger_notify-listener') log('logger', event.detail);
+          if (event.type === 'custom_awstv_video-player-state') log('state', event.detail);
+        }
+        return origDispatch.call(this, event);
+      };
+
+      const config = {
+        logLevel: 'DEBUG',
+        targetId: 'player-placeholder',
+        provider: {
+          partnerId: 6492412,
+          uiConfId: 57927432
+        },
+        playback: {
+          autoplay: false
+        },
+        plugins: {
+          awsAnalytics: {
+            // videoId and videoTitle auto-resolve from the player's media info.
+            // Explicit overrides are optional:
+            // videoId: '1_io380akk',
+            // videoTitle: 'AWS TV Test Video',
+            // orgId: 'awsm_tv'
+          }
+        }
+      };
+
+      const player = KalturaPlayer.setup(config);
+      player.loadMedia({ entryId: '1_io380akk' });
+      window.__kalturaPlayer = player;
+
+      function getPlugin() {
+        return player._pluginManager.get('awsAnalytics');
+      }
+
+      function seekBack() {
+        player.currentTime = Math.max(0, player.currentTime - 10);
+        getPlugin().sendUiEvent('SeekBackward');
+        markFired(document.querySelector('#btn-seekback'));
+      }
+      function seekFwd() {
+        player.currentTime = player.currentTime + 10;
+        getPlugin().sendUiEvent('SeekForward');
+        markFired(document.querySelector('#btn-seekfwd'));
+      }
+      function toggleTranscript(btn) {
+        getPlugin().sendUiEvent('TranscriptToggle');
+        markFired(btn);
+      }
+      function changeQuality(btn) {
+        getPlugin().sendUiEvent('QualityChange');
+        markFired(btn);
+      }
+      function clearLog() {
+        logEl.innerHTML = '';
+      }
+      function markFired(btn) {
+        if (btn && !btn.classList.contains('fired')) {
+          btn.classList.add('fired');
+        }
+      }
+    </script>
+  </body>
+</html>
